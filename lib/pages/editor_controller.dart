@@ -64,10 +64,7 @@ class EditorController extends StateNotifier<EditorControllerState> {
   }
 
   void switchCurrentMemoContents() {
-    print('UPDATING EDITOR:');
-    print('* BEFORE SAVING TO STATE.CURRENT: ${_memos[state.currentMemoIndex]}:\n');
     _updatePendingRawChanges();
-    print('* AFTER SAVING TO STATE.CURRENT: ${_memos[state.currentMemoIndex]}:\n');
 
     final currentMemo = _memos[state.currentMemoIndex];
 
@@ -76,7 +73,6 @@ class EditorController extends StateNotifier<EditorControllerState> {
       isShowingQuestion: !state.isShowingQuestion,
       currentRawMemo: _currentRawMemo,
     );
-    print('* AFTER STATE UPDATE TO STATE.CURRENT: ${_memos[state.currentMemoIndex]}:\n');
   }
 
   void clearCurrentMemoContents() {
@@ -131,6 +127,7 @@ class EditorController extends StateNotifier<EditorControllerState> {
   Future<void> exportCollection({bool keepingChanges = true}) async {
     _updatePendingRawChanges();
 
+    // TODO(matuella): Allow metadata changes
     final tempCollection = Collection(
       name: 'my_temp_collection',
       description: 'My temp description of this collection',
