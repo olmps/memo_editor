@@ -28,7 +28,11 @@ dependencies:
   ###
   # UI
   ###
-  flutter_quill: ^1.2.0
+  flutter_quill:
+    git:
+      url: git://github.com/singerdmx/flutter-quill.git
+      # TODO: Remove this ref when the fork PRs are released in the next versions
+      ref: 451dffc
 
   flutter_hooks: ^0.16.0
   hooks_riverpod: ^0.13.0
