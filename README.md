@@ -4,13 +4,17 @@ A new Flutter project.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Todo Roadmap:
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- [ ] Document and test all current functionality (plus README and ARCHITECTURE files);
+- [ ] Dramatically improve UI;
+- [ ] Allow to store/update multiple collections (locally);
+- [ ] Open Source this;
+- [ ] Allow the user to import a given collection from the `memo` repo, using the Github REST API:
+  - https://api.github.com/repos/olmps/memo/commits?path=README.md
+  - https://docs.github.com/en/rest/reference/repos#list-commits
+- [ ] Improve editor usage (probably `flutter-quill` repo changes);
+  - Allow using images;
+  - Allow specific code highlight;
+- Allow a decente experience on all platforms;
+- Distribute this application in all platforms.
