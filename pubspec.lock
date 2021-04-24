@@ -184,9 +184,11 @@ packages:
   flutter_quill:
     dependency: "direct main"
     description:
-      name: flutter_quill
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: "451dffc"
+      resolved-ref: "451dffc4cdb96ec4a851cb2e7b0f8bb2f70f626a"
+      url: "git://github.com/singerdmx/flutter-quill.git"
+    source: git
     version: "1.2.1"
   flutter_riverpod:
     dependency: "direct main"
