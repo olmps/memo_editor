@@ -24,11 +24,7 @@ class FileSelectorImpl extends FileSelector {
     final xTypeGroups = [fs.XTypeGroup(mimeTypes: mimeTypes)];
     final file = await fs.openFile(acceptedTypeGroups: xTypeGroups, confirmButtonText: confirmButtonText);
 
-    if (file == null) {
-      return null;
-    }
-
-    return file.readAsBytes();
+    return file?.readAsBytes();
   }
 
   @override
