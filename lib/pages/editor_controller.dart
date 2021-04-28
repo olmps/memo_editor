@@ -4,9 +4,12 @@ import 'package:memo_editor/models/collection.dart';
 import 'package:memo_editor/models/memo.dart';
 import 'package:memo_editor/providers.dart';
 import 'package:memo_editor/services/collection_services.dart';
+import 'package:uuid/uuid.dart';
+
+final _uuid = Uuid();
 
 final editorController =
-    StateNotifierProvider((ref) => EditorController(const Memo.empty(), services: ref.read(collectionServices)));
+    StateNotifierProvider((ref) => EditorController(Memo.empty(_uuid.v4()), services: ref.read(collectionServices)));
 
 class EditorController extends StateNotifier<EditorControllerState> {
   EditorController(Memo initialMemo, {required this.services})
@@ -30,7 +33,8 @@ class EditorController extends StateNotifier<EditorControllerState> {
     }
 
     final currentMemo = _memos[state.currentMemoIndex];
-    _memos[state.currentMemoIndex] = Memo(
+
+    _memos[state.currentMemoIndex] = currentMemo.copyWith(
       question: state.isShowingQuestion ? _currentRawMemo : currentMemo.question,
       answer: !state.isShowingQuestion ? _currentRawMemo : currentMemo.answer,
     );
@@ -39,7 +43,7 @@ class EditorController extends StateNotifier<EditorControllerState> {
   void addNewMemo() {
     _updatePendingRawChanges();
 
-    const newMemo = Memo.empty();
+    final newMemo = Memo.empty(_uuid.v4());
     _memos.add(newMemo);
 
     _currentRawMemo = newMemo.question;
@@ -79,7 +83,7 @@ class EditorController extends StateNotifier<EditorControllerState> {
     final currentMemo = _memos[state.currentMemoIndex];
 
     final isShowingQuestion = state.isShowingQuestion;
-    final updatedCurrentMemo = Memo(
+    final updatedCurrentMemo = currentMemo.copyWith(
       question: isShowingQuestion ? [] : currentMemo.question,
       answer: !isShowingQuestion ? [] : currentMemo.answer,
     );
