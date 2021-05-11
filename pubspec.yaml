@@ -26,6 +26,11 @@ dependencies:
   ###
   flutter_riverpod: ^0.14.0
 
+  ###
+  # Database
+  ###
+  hive: ^2.0.4
+  hive_flutter: ^1.0.0
 
   ###
   # UI
@@ -44,6 +49,16 @@ dev_dependencies:
   # Lint
   ###
   strict: ^1.1.0
+
+  ###
+  # File Generator
+  ###
+  build_runner: ^2.0.2
+
+  ###
+  # Hive TypeAdapter Generator
+  ###
+  hive_generator: ^1.1.0
 flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
