@@ -7,47 +7,22 @@ import 'package:flutter_quill/models/documents/document.dart' as quill_doc;
 import 'package:flutter_quill/widgets/controller.dart';
 import 'package:flutter_quill/widgets/editor.dart';
 import 'package:flutter_quill/widgets/toolbar.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:memo_editor/pages/editor_controller.dart';
+import 'package:memo_editor/application/pages/collection_editor/providers.dart';
 
 enum EditorPopupAction { clearCollection, exportCollection, importCollection }
 enum EditorAction { newMemo, switchContent, clearCurrentContent, deleteCurrentMemo }
-
-class EditorPage extends StatefulHookWidget {
-  @override
-  _EditorPageState createState() => _EditorPageState();
-}
 
 const _emptyQuillDoc = <Map<String, dynamic>>[
   <String, dynamic>{'insert': '\n'}
 ];
 
+class EditorPage extends StatefulHookWidget {
+  @override
+  State<StatefulWidget> createState() => _EditorPageState();
+}
+
 class _EditorPageState extends State<EditorPage> {
   QuillController? _currentController;
-
-  final _focusNode = FocusNode();
-  final _editorScrollController = ScrollController();
-  final _memosListScrollController = ScrollController();
-
-  void _updateListener(BuildContext context, List<Map<String, dynamic>> currentRawDoc) {
-    _currentController?.dispose();
-
-    final quill_doc.Document doc;
-    if (currentRawDoc.isEmpty) {
-      doc = quill_doc.Document.fromJson(_emptyQuillDoc);
-      context.read(editorController).currentRawMemo = _emptyQuillDoc;
-    } else {
-      doc = quill_doc.Document.fromJson(currentRawDoc);
-    }
-
-    _currentController = QuillController(document: doc, selection: const TextSelection.collapsed(offset: 0));
-
-    _currentController!.addListener(() {
-      context.read(editorController).currentRawMemo =
-          _currentController!.document.toDelta().toJson() as List<Map<String, dynamic>>;
-    });
-  }
 
   @override
   void dispose() {
@@ -61,7 +36,7 @@ class _EditorPageState extends State<EditorPage> {
 
     final rawQuillDoc = _currentController?.document.toDelta().toJson();
     final isInSyncWithState =
-        DeepCollectionEquality().equals(jsonEncode(editorState.currentRawMemo), jsonEncode(rawQuillDoc));
+        const DeepCollectionEquality().equals(jsonEncode(editorState.currentRawMemo), jsonEncode(rawQuillDoc));
 
     if (_currentController == null || !isInSyncWithState) {
       _updateListener(context, editorState.currentRawMemo);
@@ -69,9 +44,9 @@ class _EditorPageState extends State<EditorPage> {
 
     final editor = QuillEditor(
       controller: _currentController!,
-      scrollController: _editorScrollController,
+      scrollController: useScrollController(),
       scrollable: true,
-      focusNode: _focusNode,
+      focusNode: useFocusNode(),
       autoFocus: false,
       readOnly: false,
       expands: false,
@@ -85,11 +60,13 @@ class _EditorPageState extends State<EditorPage> {
           index.toString(),
           style: TextStyle(color: index == editorState.currentMemoIndex ? Colors.blue.shade700 : null),
         ),
-        onPressed: () => context.editor.updateCurrentMemoIndex(index),
+        onPressed: () => context.readEditor().updateCurrentMemoIndex(index),
       ),
     );
+
+    final memosListScrollController = useScrollController();
     final list = ListView(
-      controller: _memosListScrollController,
+      controller: memosListScrollController,
       shrinkWrap: true,
       scrollDirection: Axis.horizontal,
       children: children,
@@ -134,7 +111,7 @@ class _EditorPageState extends State<EditorPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editando Coleção X'),
+        title: const Text('Editando Coleção X'),
         actions: [popupMenu],
       ),
       body: SingleChildScrollView(
@@ -145,23 +122,42 @@ class _EditorPageState extends State<EditorPage> {
             Column(
                 mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: editorActions),
             Scrollbar(
-              controller: _memosListScrollController,
+              controller: memosListScrollController,
               isAlwaysShown: true,
               child: Container(color: Colors.black12, height: 100, child: list),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               'Editando ${editorState.isShowingQuestion ? 'Questão' : 'Resposta'}',
               style: Theme.of(context).textTheme.headline5,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             QuillToolbar.basic(controller: _currentController!),
-            SizedBox(height: 60),
+            const SizedBox(height: 60),
             editor,
           ],
         ),
       ),
     );
+  }
+
+  void _updateListener(BuildContext context, List<Map<String, dynamic>> currentRawDoc) {
+    _currentController?.dispose();
+
+    final quill_doc.Document doc;
+    if (currentRawDoc.isEmpty) {
+      doc = quill_doc.Document.fromJson(_emptyQuillDoc);
+      context.readEditor().currentRawMemo = _emptyQuillDoc;
+    } else {
+      doc = quill_doc.Document.fromJson(currentRawDoc);
+    }
+
+    _currentController = QuillController(document: doc, selection: const TextSelection.collapsed(offset: 0));
+
+    _currentController!.addListener(() {
+      context.readEditor().currentRawMemo =
+          _currentController!.document.toDelta().toJson() as List<Map<String, dynamic>>;
+    });
   }
 
   String _popupActionDescription(EditorPopupAction action) {
@@ -190,15 +186,15 @@ class _EditorPageState extends State<EditorPage> {
     switch (action) {
       case EditorPopupAction.exportCollection:
         // TODO(matuella): allow to select keep changes
-        context.editor.exportCollection();
+        context.readEditor().exportCollection();
         break;
       case EditorPopupAction.importCollection:
         // TODO(matuella): add a warning, as this is an irreversible action
-        context.editor.importCollection();
+        context.readEditor().importCollection();
         break;
       case EditorPopupAction.clearCollection:
         // TODO(matuella): add a warning, as this is an irreversible action
-        context.editor.clearCollection();
+        context.readEditor().clearCollection();
         break;
     }
   }
@@ -232,24 +228,18 @@ class _EditorPageState extends State<EditorPage> {
   void _editorActionPressed(EditorAction action, BuildContext context) {
     switch (action) {
       case EditorAction.newMemo:
-        context.editor.addNewMemo();
+        context.readEditor().addNewMemo();
         break;
       case EditorAction.switchContent:
-        context.editor.switchCurrentMemoContents();
+        context.readEditor().switchCurrentMemoContents();
         break;
       case EditorAction.clearCurrentContent:
-        context.editor.clearCurrentMemoContents();
+        context.readEditor().clearCurrentMemoContents();
         break;
       case EditorAction.deleteCurrentMemo:
         // TODO(matuella): add a warning (only if the content is not blank), as this is an irreversible action
-        context.editor.deleteCurrentMemo();
+        context.readEditor().deleteCurrentMemo();
         break;
     }
   }
 }
-
-extension on BuildContext {
-  EditorController get editor => read(editorController);
-}
-
-EditorControllerState useEditorState() => useProvider(editorController.state);

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:memo_editor/gateways/file_selector.dart';
-import 'package:memo_editor/models/collection.dart';
-import 'package:memo_editor/serializers/collection_serializer.dart';
+import 'package:memo_editor/data/gateways/file_selector.dart';
+import 'package:memo_editor/data/serializers/collection_json_serializer.dart';
+import 'package:memo_editor/domain/models/collection.dart';
 
 abstract class CollectionServices {
   Future<void> saveCollection(Collection collection);
