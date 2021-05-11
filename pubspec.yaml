@@ -24,7 +24,8 @@ dependencies:
   ###
   # State Management
   ###
-  flutter_riverpod: ^0.13.0
+  flutter_riverpod: ^0.14.0
+
 
   ###
   # UI
@@ -33,12 +34,16 @@ dependencies:
   flutter_quill: 1.2.2
 
   flutter_hooks: ^0.16.0
-  hooks_riverpod: ^0.13.0
+  hooks_riverpod: ^0.14.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  ###
+  # Lint
+  ###
+  strict: ^1.1.0
 flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

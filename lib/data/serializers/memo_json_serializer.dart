@@ -1,5 +1,5 @@
-import 'package:memo_editor/models/memo.dart';
-import 'package:memo_editor/serializers/serializer.dart';
+import 'package:memo_editor/data/serializers/serializer.dart';
+import 'package:memo_editor/domain/models/memo.dart';
 
 class MemoKeys {
   static const uniqueId = 'uniqueId';

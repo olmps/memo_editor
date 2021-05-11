@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:memo_editor/gateways/file_selector.dart';
-import 'package:memo_editor/services/collection_services.dart';
+import 'package:memo_editor/data/gateways/file_selector.dart';
+import 'package:memo_editor/domain/services/collection_services.dart';
 
 final fileSelector = Provider((_) => FileSelectorImpl());
 

@@ -1,22 +1,22 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:memo_editor/models/collection.dart';
-import 'package:memo_editor/models/memo.dart';
-import 'package:memo_editor/providers.dart';
-import 'package:memo_editor/services/collection_services.dart';
+import 'package:memo_editor/domain/models/collection.dart';
+import 'package:memo_editor/domain/models/memo.dart';
+import 'package:memo_editor/domain/services/collection_services.dart';
 import 'package:uuid/uuid.dart';
 
-final _uuid = Uuid();
+const _uuid = Uuid();
 
-final editorController =
-    StateNotifierProvider((ref) => EditorController(Memo.empty(_uuid.v4()), services: ref.read(collectionServices)));
-
-class EditorController extends StateNotifier<EditorControllerState> {
-  EditorController(Memo initialMemo, {required this.services})
+class CollectionEditorVM extends StateNotifier<CollectionEditorState> {
+  CollectionEditorVM(Memo initialMemo, {required this.services})
       : _memos = [initialMemo],
         _currentRawMemo = initialMemo.question,
-        super(EditorControllerState(
-            currentMemoIndex: 0, currentRawMemo: initialMemo.question, memosCount: 1, isShowingQuestion: true));
+        super(CollectionEditorState(
+          currentMemoIndex: 0,
+          currentRawMemo: initialMemo.question,
+          memosCount: 1,
+          isShowingQuestion: true,
+        ));
 
   final CollectionServices services;
 
@@ -132,12 +132,14 @@ class EditorController extends StateNotifier<EditorControllerState> {
     _updatePendingRawChanges();
 
     // TODO(matuella): Allow metadata changes
-    final tempCollection = Collection(
+    const tempCollection = Collection(
+      id: 'my_temp_collection',
       name: 'my_temp_collection',
       description: 'My temp description of this collection',
       category: 'TempCategory',
-      tags: const ['temp tag 1', 'temp tag 2'],
-      memos: _memos,
+      tags: ['temp tag 1', 'temp tag 2'],
+      // TODO(matuella): Stitch both collection + memos
+      // memos: _memos,
     );
 
     await services.saveCollection(tempCollection);
@@ -149,9 +151,9 @@ class EditorController extends StateNotifier<EditorControllerState> {
   Future<void> importCollection() async {
     final importedCollection = await services.importCollection();
 
-    _memos
-      ..clear()
-      ..addAll(importedCollection.memos);
+    _memos..clear();
+    // TODO(matuella): Stitch both collection + memos
+    // ..addAll(importedCollection.memos);
 
     _currentRawMemo = _memos.first.question;
     state = state.copyWith(
@@ -163,8 +165,8 @@ class EditorController extends StateNotifier<EditorControllerState> {
   }
 }
 
-class EditorControllerState with EquatableMixin {
-  EditorControllerState({
+class CollectionEditorState with EquatableMixin {
+  CollectionEditorState({
     required this.currentMemoIndex,
     required this.currentRawMemo,
     required this.memosCount,
@@ -176,13 +178,13 @@ class EditorControllerState with EquatableMixin {
   final int memosCount;
   final bool isShowingQuestion;
 
-  EditorControllerState copyWith({
+  CollectionEditorState copyWith({
     int? currentMemoIndex,
     List<Map<String, dynamic>>? currentRawMemo,
     int? memosCount,
     bool? isShowingQuestion,
   }) =>
-      EditorControllerState(
+      CollectionEditorState(
         currentMemoIndex: currentMemoIndex ?? this.currentMemoIndex,
         currentRawMemo: currentRawMemo ?? this.currentRawMemo,
         memosCount: memosCount ?? this.memosCount,
