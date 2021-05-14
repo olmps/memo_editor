@@ -6,7 +6,13 @@
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart",
-      "preLaunchTask": "flutter: flutter pub run build_runner watch",
+    },
+    {
+      "name": "DEV - Tool + Watch",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "preLaunchTask": "Watch build_runner files"
     },
   ]
 }
