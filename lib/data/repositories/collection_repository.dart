@@ -7,9 +7,9 @@ import 'package:rxdart/rxdart.dart';
 
 /// Handles all read, write and serialization operations pertaining to one or multiple [Collection]
 abstract class CollectionRepository {
-  /// Retrieves a [Stream] that contains all stored [Collection]
+  /// Retrieves a [Stream] that updates with all stored [Collection]
   ///
-  /// The stream updates every time any [Collection] is updated or one is added/removed.
+  /// A new event is emitted every time any [Collection] is updated or one is added/removed.
   Future<Stream<List<Collection>>> listenToAllCollections();
 
   /// Retrieves a collection that matches [collectionId] with [Collection.id]
@@ -17,7 +17,7 @@ abstract class CollectionRepository {
 
   /// Stores a new [Collection]
   ///
-  /// If there is a collection with the same [Collection.id], this will update (override) all properties.
+  /// If there is a collection with the same [Collection.id], this will update (override) all of its properties.
   Future<void> putCollection(Collection collection);
 
   /// Deletes a collection that matches [collectionId] with [Collection.id]
@@ -34,7 +34,8 @@ class CollectionRepositoryImpl implements CollectionRepository {
   Future<Stream<List<Collection>>> listenToAllCollections() async {
     final collectionsBox = await _getCollectionsBox();
     List<Collection> _mapCollectionsFromBox() => collectionsBox.values.map(_hiveCollectionSerializer.from).toList();
-
+    // We have to add a starting value because `watch` only updates when a new event has occurred, meaning that this
+    // stream will almost always start "empty"
     return collectionsBox.watch().map((_) => _mapCollectionsFromBox()).startWith(_mapCollectionsFromBox());
   }
 
