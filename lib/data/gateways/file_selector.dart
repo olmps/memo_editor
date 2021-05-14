@@ -5,7 +5,7 @@ import 'package:file_selector/file_selector.dart' as fs;
 abstract class FileSelector {
   Future<String?> getSavePathWithSelector({String? suggestedName, String? confirmButtonText});
   Future<Uint8List?> loadSingleFileWithSelector(
-      {List<String>? mimeTypes, String? suggestedName, String? confirmButtonText});
+      {List<String>? extensions, String? suggestedName, String? confirmButtonText});
   Future<void> writeFile(Uint8List bytes, {required String path, String? mimeType});
   Future<Uint8List> readFile(String path);
 }
@@ -17,11 +17,11 @@ class FileSelectorImpl extends FileSelector {
 
   @override
   Future<Uint8List?> loadSingleFileWithSelector({
-    List<String>? mimeTypes,
+    List<String>? extensions,
     String? suggestedName,
     String? confirmButtonText,
   }) async {
-    final xTypeGroups = [fs.XTypeGroup(mimeTypes: mimeTypes)];
+    final xTypeGroups = [fs.XTypeGroup(extensions: extensions)];
     final file = await fs.openFile(acceptedTypeGroups: xTypeGroups, confirmButtonText: confirmButtonText);
 
     return file?.readAsBytes();
