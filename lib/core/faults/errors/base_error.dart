@@ -28,4 +28,7 @@ enum ErrorType {
   viewModelInconsistentState,
   layoutInconsistentState,
   gatewayInconsistentState,
+
+  // SerializationError
+  serialization,
 }
