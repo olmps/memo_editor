@@ -18,3 +18,25 @@ Todo Roadmap:
   - Allow specific code highlight;
 - Allow a decente experience on all platforms;
 - Distribute this application in all platforms.
+
+
+
+## Example Collection Format
+
+Minimal example of a collection, appropriately called `my_example_collection.json`, holding a single memo:
+
+```json
+{
+  "id": "my_example_collection",
+  "name": "My Example Collection",
+  "description": "My description",
+  "category": "My category",
+  "tags": ["My single tag"],
+  "memos": [
+    {
+      "question": [],
+      "answer": []
+    },
+  ]
+}
+```
