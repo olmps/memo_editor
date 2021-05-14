@@ -20,6 +20,17 @@ Todo Roadmap:
 - Distribute this application in all platforms.
 
 
+## Running Tasks
+
+Because this project's uses `build_runner`, it's important to know when to use its tasks.
+
+When you open this project, the `Generate build_runner files` should automatically run but if for some reason the vscode
+do not, open the vscode `Run Build Task` with the `CMD + SHIFT + B` shorcut and run `Generate build_runner files`.
+
+If you're planning to develop and change any file that auto-generates, open the vscode `Run Build Task` with the
+`CMD + SHIFT + B` shorcut and run `Watch build_runner files`, or simply launch using the `DEV - Tool + Watch`
+configuration.
+
 
 ## Example Collection Format
 
