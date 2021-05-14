@@ -7,21 +7,22 @@ import 'package:flutter_quill/models/documents/document.dart' as quill_doc;
 import 'package:flutter_quill/widgets/controller.dart';
 import 'package:flutter_quill/widgets/editor.dart';
 import 'package:flutter_quill/widgets/toolbar.dart';
-import 'package:memo_editor/application/pages/collection_editor/providers.dart';
+import 'package:memo_editor/application/pages/collection_editor/collection_editor_providers.dart';
+import 'package:memo_editor/application/view_models/collection_editor_vm.dart';
 
-enum EditorPopupAction { clearCollection, exportCollection, importCollection }
+enum EditorPopupAction { clearAllMemos }
 enum EditorAction { newMemo, switchContent, clearCurrentContent, deleteCurrentMemo }
 
 const _emptyQuillDoc = <Map<String, dynamic>>[
   <String, dynamic>{'insert': '\n'}
 ];
 
-class EditorPage extends StatefulHookWidget {
+class CollectionEditorPage extends StatefulHookWidget {
   @override
-  State<StatefulWidget> createState() => _EditorPageState();
+  State<StatefulWidget> createState() => _CollectionEditorPageState();
 }
 
-class _EditorPageState extends State<EditorPage> {
+class _CollectionEditorPageState extends State<CollectionEditorPage> {
   QuillController? _currentController;
 
   @override
@@ -32,7 +33,11 @@ class _EditorPageState extends State<EditorPage> {
 
   @override
   Widget build(BuildContext context) {
-    final editorState = useEditorState();
+    final editorState = useCollectionEditorState();
+
+    if (editorState is! LoadedCollectionEditorState) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     final rawQuillDoc = _currentController?.document.toDelta().toJson();
     final isInSyncWithState =
@@ -60,7 +65,7 @@ class _EditorPageState extends State<EditorPage> {
           index.toString(),
           style: TextStyle(color: index == editorState.currentMemoIndex ? Colors.blue.shade700 : null),
         ),
-        onPressed: () => context.readEditor().updateCurrentMemoIndex(index),
+        onPressed: () => context.readCollectionEditor().updateCurrentMemoIndex(index),
       ),
     );
 
@@ -120,7 +125,10 @@ class _EditorPageState extends State<EditorPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Column(
-                mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: editorActions),
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: editorActions,
+            ),
             Scrollbar(
               controller: memosListScrollController,
               isAlwaysShown: true,
@@ -133,6 +141,13 @@ class _EditorPageState extends State<EditorPage> {
             ),
             const SizedBox(height: 20),
             QuillToolbar.basic(controller: _currentController!),
+            if (editorState.isUpdating) ...[
+              const SizedBox(height: 20),
+              const SizedBox(
+                height: 20,
+                child: CircularProgressIndicator(),
+              )
+            ],
             const SizedBox(height: 60),
             editor,
           ],
@@ -147,7 +162,7 @@ class _EditorPageState extends State<EditorPage> {
     final quill_doc.Document doc;
     if (currentRawDoc.isEmpty) {
       doc = quill_doc.Document.fromJson(_emptyQuillDoc);
-      context.readEditor().currentRawMemo = _emptyQuillDoc;
+      context.readCollectionEditor().currentRawMemo = _emptyQuillDoc;
     } else {
       doc = quill_doc.Document.fromJson(currentRawDoc);
     }
@@ -155,46 +170,29 @@ class _EditorPageState extends State<EditorPage> {
     _currentController = QuillController(document: doc, selection: const TextSelection.collapsed(offset: 0));
 
     _currentController!.addListener(() {
-      context.readEditor().currentRawMemo =
+      context.readCollectionEditor().currentRawMemo =
           _currentController!.document.toDelta().toJson() as List<Map<String, dynamic>>;
     });
   }
 
   String _popupActionDescription(EditorPopupAction action) {
     switch (action) {
-      case EditorPopupAction.exportCollection:
-        return 'Exportar Coleção';
-      case EditorPopupAction.importCollection:
-        return 'Importar Coleção';
-      case EditorPopupAction.clearCollection:
-        return 'Deletar Coleção';
+      case EditorPopupAction.clearAllMemos:
+        return 'Deletar todos os Memos';
     }
   }
 
   Icon _popupActionIcon(EditorPopupAction action) {
     switch (action) {
-      case EditorPopupAction.exportCollection:
-        return const Icon(Icons.download_sharp);
-      case EditorPopupAction.importCollection:
-        return const Icon(Icons.upload_sharp);
-      case EditorPopupAction.clearCollection:
+      case EditorPopupAction.clearAllMemos:
         return const Icon(Icons.delete_forever);
     }
   }
 
   void _popupActionPressed(EditorPopupAction action, BuildContext context) {
     switch (action) {
-      case EditorPopupAction.exportCollection:
-        // TODO(matuella): allow to select keep changes
-        context.readEditor().exportCollection();
-        break;
-      case EditorPopupAction.importCollection:
-        // TODO(matuella): add a warning, as this is an irreversible action
-        context.readEditor().importCollection();
-        break;
-      case EditorPopupAction.clearCollection:
-        // TODO(matuella): add a warning, as this is an irreversible action
-        context.readEditor().clearCollection();
+      case EditorPopupAction.clearAllMemos:
+        context.readCollectionEditor().clearAllMemos();
         break;
     }
   }
@@ -228,17 +226,17 @@ class _EditorPageState extends State<EditorPage> {
   void _editorActionPressed(EditorAction action, BuildContext context) {
     switch (action) {
       case EditorAction.newMemo:
-        context.readEditor().addNewMemo();
+        context.readCollectionEditor().addNewMemo();
         break;
       case EditorAction.switchContent:
-        context.readEditor().switchCurrentMemoContents();
+        context.readCollectionEditor().switchCurrentMemoContents();
         break;
       case EditorAction.clearCurrentContent:
-        context.readEditor().clearCurrentMemoContents();
+        context.readCollectionEditor().clearCurrentMemoContents();
         break;
       case EditorAction.deleteCurrentMemo:
         // TODO(matuella): add a warning (only if the content is not blank), as this is an irreversible action
-        context.readEditor().deleteCurrentMemo();
+        context.readCollectionEditor().deleteCurrentMemo();
         break;
     }
   }
