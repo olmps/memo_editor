@@ -8,7 +8,7 @@ import 'package:meta/meta.dart';
 @immutable
 class Memo extends Equatable {
   const Memo({required this.uniqueId, required this.question, required this.answer});
-  const Memo.empty(this.uniqueId)
+  const Memo.empty({required this.uniqueId})
       : question = const <Map<String, dynamic>>[],
         answer = const <Map<String, dynamic>>[];
 
@@ -16,8 +16,11 @@ class Memo extends Equatable {
   final List<Map<String, dynamic>> question;
   final List<Map<String, dynamic>> answer;
 
-  Memo copyWith({List<Map<String, dynamic>>? question, List<Map<String, dynamic>>? answer}) =>
-      Memo(uniqueId: uniqueId, question: question ?? this.question, answer: answer ?? this.answer);
+  Memo copyWith({List<Map<String, dynamic>>? question, List<Map<String, dynamic>>? answer}) => Memo(
+        uniqueId: uniqueId,
+        question: question ?? this.question,
+        answer: answer ?? this.answer,
+      );
 
   @override
   bool? get stringify => true;
