@@ -13,6 +13,7 @@ import 'package:memo_editor/domain/transients/collection_memos.dart';
 abstract class TransferRepository {
   /// Imports a single [CollectionMemos]
   ///
+  /// {@template memo_editor.data.repositories.importCollectionMemos}
   /// The import uses the native OS "file picker or selector" to retrieve the raw representation of the selected file.
   /// After import, it tries to serialize this file to a [CollectionMemos] following a format that the memo application
   /// also knows how to handle.
@@ -22,14 +23,17 @@ abstract class TransferRepository {
   /// May return `null` if there were no picked files.
   ///
   /// Throws a [ValidationException.malformedCollection] if the picked file is malformed.
+  /// {@endtemplate}
   Future<CollectionMemos?> importCollectionMemos();
 
   /// Exports a [collectionMemos] to a file
   ///
+  /// {@template memo_editor.data.repositories.exportCollectionMemos}
   /// The export uses the native OS "file picker or selector" to select the desired folder to store this collection.
   /// After selecting the folder, it serializes the [CollectionMemos] to a raw format and saves to the destination.
   ///
   /// You can read about this format in this project's **README format example**.
+  /// {@endtemplate}
   Future<void> exportCollectionMemos(CollectionMemos collectionMemos);
 }
 
