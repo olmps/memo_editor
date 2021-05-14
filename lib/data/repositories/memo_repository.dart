@@ -5,18 +5,26 @@ import 'package:memo_editor/domain/models/memo.dart';
 
 /// Handles all read, write and serialization operations pertaining to one or multiple [Memo]
 abstract class MemoRepository {
+  /// {@template memo_editor.data.repositories.getAllMemos}
   /// Retrieve all stored [Memo] that are associated with a `Collection` of [collectionId]
+  /// {@endtemplate}
   Future<List<Memo>> getAllMemos({required String collectionId});
 
+  /// {@template memo_editor.data.repositories.deleteAllMemos}
   /// Delete all stored [Memo] that are associated with a `Collection` of [collectionId]
+  /// {@endtemplate}
   Future<void> deleteAllMemos({required String collectionId});
 
+  /// {@template memo_editor.data.repositories.deleteMemoById}
   /// Delete a single [Memo] of [memoId]
+  /// {@endtemplate}
   Future<void> deleteMemoById(String memoId);
 
+  /// {@template memo_editor.data.repositories.putMemo}
   /// Stores a new [Memo]
   ///
   /// If there is a memo with the same [Memo.uniqueId], this will update (override) all of its properties.
+  /// {@endtemplate}
   Future<void> putMemo(Memo memo, {required String collectionId});
 
   /// Stores a list of [Memo]

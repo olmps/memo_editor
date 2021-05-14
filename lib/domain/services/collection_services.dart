@@ -1,61 +1,93 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
-import 'package:memo_editor/data/gateways/file_selector.dart';
-import 'package:memo_editor/data/serializers/collection_json_serializer.dart';
+import 'package:memo_editor/data/repositories/collection_repository.dart';
+import 'package:memo_editor/data/repositories/memo_repository.dart';
+import 'package:memo_editor/data/repositories/transfer_repository.dart';
 import 'package:memo_editor/domain/models/collection.dart';
+import 'package:memo_editor/domain/models/memo.dart';
+import 'package:memo_editor/domain/transients/collection_memos.dart';
+import 'package:uuid/uuid.dart';
 
+/// Handles all domain-specific operations pertaining to one or multiple [Collection]
 abstract class CollectionServices {
-  Future<void> saveCollection(Collection collection);
-  Future<Collection> importCollection();
+  /// {@macro memo_editor.data.repositories.listenToAllCollections}
+  Future<Stream<List<Collection>>> listenToAllCollections();
+
+  /// {@macro memo_editor.data.repositories.getCollectionById}
+  Future<Collection> getCollectionById(String collectionId);
+
+  /// {@macro memo_editor.data.repositories.putCollection}
+  Future<void> putCollection(Collection collection);
+
+  /// {@macro memo_editor.data.repositories.deleteCollectionById}
+  Future<void> deleteCollectionById(String collectionId);
+
+  /// Stores a new blank [Collection] and return its instance
+  Future<Collection> putPristineCollection();
+
+  /// Imports a single [Collection]
+  ///
+  /// {@macro memo_editor.data.repositories.importCollectionMemos}
+  Future<Collection?> importCollection();
+
+  /// Export a [Collection] of [collectionId] and all of its associated [Memo]
+  ///
+  /// {@macro memo_editor.data.repositories.exportCollectionMemos}
+  Future<void> exportCollectionById(String collectionId);
 }
 
 class CollectionServicesImpl implements CollectionServices {
-  CollectionServicesImpl(this.fileSelector);
+  CollectionServicesImpl(this.collectionRepo, this.memoRepo, this.transferRepo);
 
-  final FileSelector fileSelector;
-  static const _extension = '.json';
-  static const _encoderIndent = '  '; // Two whitespaces
-  final _serializer = CollectionSerializer();
+  final CollectionRepository collectionRepo;
+  final MemoRepository memoRepo;
+  final TransferRepository transferRepo;
+
+  static const _uuid = Uuid();
 
   @override
-  Future<void> saveCollection(Collection collection) async {
-    final path = await fileSelector.getSavePathWithSelector(
-      suggestedName: collection.name + _extension,
-      confirmButtonText: 'Salvar',
-    );
+  Future<void> deleteCollectionById(String collectionId) => collectionRepo.deleteCollectionById(collectionId);
 
-    if (path == null) {
-      // TODO(matuella): throw a human-readable error
-      return;
-    }
+  @override
+  Future<Collection> getCollectionById(String collectionId) => collectionRepo.getCollectionById(collectionId);
 
-    final rawCollection = _serializer.to(collection);
-    final encoder = JsonUtf8Encoder(_encoderIndent);
-    final encodedCollection = encoder.convert(rawCollection);
+  @override
+  Future<Stream<List<Collection>>> listenToAllCollections() => collectionRepo.listenToAllCollections();
 
-    return fileSelector.writeFile(Uint8List.fromList(encodedCollection), path: path);
+  @override
+  Future<void> putCollection(Collection collection) => collectionRepo.putCollection(collection);
+
+  @override
+  Future<Collection> putPristineCollection() async {
+    final collectionId = _uuid.v4();
+    final newCollection = Collection.empty(id: collectionId);
+
+    await Future.wait([
+      collectionRepo.putCollection(newCollection),
+      memoRepo.putMemo(Memo.empty(uniqueId: _uuid.v4()), collectionId: collectionId),
+    ]);
+
+    return newCollection;
   }
 
   @override
-  Future<Collection> importCollection() async {
-    final fileBytes = await fileSelector.loadSingleFileWithSelector(
-      confirmButtonText: 'Salvar',
-    );
+  Future<void> exportCollectionById(String collectionId) async => transferRepo.exportCollectionMemos(
+        CollectionMemos(
+          await getCollectionById(collectionId),
+          await memoRepo.getAllMemos(collectionId: collectionId),
+        ),
+      );
 
-    if (fileBytes == null) {
-      // TODO(matuella): throw a human-readable error
-      throw 'Failed to read the imported file';
+  @override
+  Future<Collection?> importCollection() async {
+    final importedCollectionMemos = await transferRepo.importCollectionMemos();
+    if (importedCollectionMemos == null) {
+      return null;
     }
 
-    final decodedRawCollection = utf8.decoder.convert(fileBytes);
-    final dynamic rawCollection = jsonDecode(decodedRawCollection);
+    await Future.wait([
+      collectionRepo.putCollection(importedCollectionMemos.collection),
+      memoRepo.putMemos(importedCollectionMemos.memos, collectionId: importedCollectionMemos.collection.id),
+    ]);
 
-    if (rawCollection is Map<String, dynamic>) {
-      return _serializer.from(rawCollection);
-    }
-
-    // TODO(matuella): throw a human-readable error
-    throw 'The imported file is not of type `Map<String, dynamic>`';
+    return importedCollectionMemos.collection;
   }
 }
