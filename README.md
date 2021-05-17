@@ -16,6 +16,8 @@ with your own personal preferences.
 Nonetheless, we are looking into where this tool stands today and where we can go from here to improve the `memo`
 ecosystem, you can take a look at this project's issues to get to know what are the next steps.
 
+This pre-alpha version is available at [https://memo-editor.netlify.app/](https://memo-editor.netlify.app/).
+
 ## Setup
 
 If you have no idea how to install Flutter and run it locally, check this

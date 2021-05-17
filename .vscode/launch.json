@@ -8,6 +8,13 @@
       "program": "lib/main.dart",
     },
     {
+      "name": "RELEASE - Tool",
+      "type": "dart",
+      "request": "launch",
+      "flutterMode": "release",
+      "program": "lib/main.dart",
+    },
+    {
       "name": "DEV - Tool + Watch",
       "type": "dart",
       "request": "launch",
