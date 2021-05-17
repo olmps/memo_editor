@@ -15,15 +15,19 @@ extension CollectionsVMContext on BuildContext {
 
 CollectionsState useCollectionsState() => useProvider(collectionsVM);
 
-final collectionDetailsId = ScopedProvider<String?>(null);
+final collectionDetailsId = ScopedProvider<String?>((_) => null);
+// This should be called using `StateNotifierProvider.autoDispose.family`, but there are issues with dart2js:
+// https://github.com/rrousselGit/river_pod/issues/71
+// https://github.com/dart-lang/sdk/issues/41449
+// Even though they are closed, I think it still didn't rolled out to Flutter, because in Flutter 2.0.6 it still fails
 final collectionDetailsVM =
-    StateNotifierProvider.autoDispose.family<CollectionDetailsVM, CollectionDetailsState, String?>(
+    AutoDisposeStateNotifierProviderFamily<CollectionDetailsVM, CollectionDetailsState, String?>(
   (ref, collectionId) => CollectionDetailsVMImpl(ref.read(collectionServices), collectionId: collectionId),
 );
 
 extension CollectionDetailsVMContext on BuildContext {
-  String? get selectedCollectionDetailsId => read(collectionDetailsId);
-  CollectionDetailsVM readCollectionDetails() => read(collectionDetailsVM(selectedCollectionDetailsId).notifier);
+  String? readSelectedCollectionDetailsId() => read(collectionDetailsId);
+  CollectionDetailsVM readCollectionDetails() => read(collectionDetailsVM(readSelectedCollectionDetailsId()).notifier);
 }
 
 CollectionDetailsState useCollectionDetailsState() =>
